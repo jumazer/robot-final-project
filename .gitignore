@@ -1,0 +1,36 @@
+# Build directories
+/Debug/
+/Release/
+/build/
+
+# Object and binary files
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.map
+
+# IDE files (STM32CubeIDE / Eclipse)
+.metadata/
+.settings/
+*.launch
+.cproject
+.project
+
+# Logs / temp
+screenlog.*
+*.log
+*.tmp
+*.bak
+
+# Generated files
+*.su
+*.lst
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Your custom ignores
+tree.txt
