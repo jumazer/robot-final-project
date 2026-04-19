@@ -21,6 +21,40 @@
 #include "debug.h"
 #include "board.h"
 #include "motor_control.h"
+#include "usart.h"
+
+#include "stm32f0xx.h"
+
+extern uint32_t SystemCoreClock;
+extern void SystemCoreClockUpdate(void);
+
+void get_clock_info() {
+    SystemCoreClockUpdate();
+
+    volatile uint32_t hclk = SystemCoreClock;   // core clock
+
+    volatile uint32_t sysclk = hclk;
+    volatile uint32_t pclk   = hclk;
+
+    uint32_t hpre = (RCC->CFGR >> 4) & 0xF;     // AHB prescaler
+    uint32_t ppre = (RCC->CFGR >> 8) & 0x7;     // APB prescaler
+
+    // Recover SYSCLK from HCLK
+    if (hpre >= 8) {                            // 1000:/2 ... 1111:/512
+        uint32_t ahb_shift = hpre - 7;
+        sysclk = hclk << ahb_shift;
+    }
+
+
+    // Get PCLK from HCLK
+    if (ppre >= 4) {                            // 100:/2, 101:/4, 110:/8, 111:/16
+        pclk = hclk >> (ppre - 3);
+    }
+
+    DBG_PRINTF("pclk: %lu\r\n", pclk);
+    DBG_PRINTF("hclk: %lu\r\n", hclk);
+    DBG_PRINTF("sysclk: %lu\r\n", sysclk);
+}
 
 
 int main(void)
@@ -32,19 +66,21 @@ int main(void)
 	 * Clocks: Processor = 48 Mhz. AHB = 48 MHz. APB = 24 MHz.
 	 */
 
-    DBG_PRINTF("STARTING PROGRAM!\r\n");
-
     init_board();
-
-    // Enable the motor controller TB6612
-    GPIOA->BSRR = GPIO_BSRR_BS_9;	// STBY = 1
+    init_usart();
 
 
-    while(1) {
-		move_forward();
-		delay_cycles(5000000);
-		brake_stop();
-		delay_cycles(5000000);
-    }
+    DBG_PRINTF("STARTING PROGRAM\r\n");
 
+//    // Enable the motor controller TB6612
+//    GPIOA->BSRR = GPIO_BSRR_BS_9;	// STBY = 1
+//
+//
+//
+    DBG_PRINTF("Enter a character: ");
+    fflush(stdout);
+    char c = usart_getchar();
+    DBG_PRINTF("\r\nYou entered: %c\r\n", c);
+
+    while(1) { }
 }

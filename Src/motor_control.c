@@ -57,13 +57,20 @@ void turn_left(void) {
     delay_cycles(5000000);
 
     GPIOB->BSRR = GPIO_BSRR_BS_5;	// BIN1 = 1
-    GPIOB->BSRR = GPIO_BSRR_BS_3;	// BIN2 = 1
+    GPIOB->BSRR = GPIO_BSRR_BR_3;	// BIN2 = 0
 
     enable_motors();
 
 }
 
 void turn_right(void) {
+    GPIOB->BSRR = GPIO_BSRR_BR_5;	// BIN1 = 0
+    GPIOB->BSRR = GPIO_BSRR_BR_3;	// BIN2 = 0
+
+    delay_cycles(5000000);
+
+    GPIOC->BSRR = GPIO_BSRR_BS_7;	// AIN1 = 0
+    GPIOB->BSRR = GPIO_BSRR_BR_6;	// AIN2 = 0
 
 
 	enable_motors();
