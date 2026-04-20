@@ -8,6 +8,53 @@
 #include <stm32f091xc.h>
 
 #include "debug.h"
+#include "motor_control.h"
+
+/*
+ * @brief Converts an uppercase letter to lowercase
+ * Leaves all non-uppercase characters unchanged
+ *
+ * @param[c] Character to convert
+ *
+ * @return Lowercase version of the character if uppercase, otherwise original character
+ */
+static int to_lower(int c)
+{
+    if (c >= 'A' && c <= 'Z')
+    {
+        return (int)(c + ('a' - 'A'));
+    }
+    return c;
+}
+
+void init_motor_control() {
+    // Enable the motor controller TB6612
+    GPIOA->BSRR = GPIO_BSRR_BS_9;	// STBY = 1
+}
+
+void process_command(char c) {
+	char lower_c = to_lower(c);
+
+	switch(lower_c) {
+		case 'w':
+			move_forward();
+			break;
+		case 'a':
+			turn_left();
+			break;
+		case 's':
+			move_backward();
+			break;
+		case 'd':
+			turn_right();
+			break;
+		case 'b':
+			brake_stop();
+		case 'q':
+			stop();
+	}
+}
+
 
 static void enable_motors(void) {
     GPIOA->BSRR = GPIO_BSRR_BS_7;   // PWMA = 1
@@ -54,12 +101,14 @@ void turn_left(void) {
     GPIOC->BSRR = GPIO_BSRR_BR_7;	// AIN1 = 0
     GPIOB->BSRR = GPIO_BSRR_BR_6;	// AIN2 = 0
 
-    delay_cycles(5000000);
-
     GPIOB->BSRR = GPIO_BSRR_BS_5;	// BIN1 = 1
     GPIOB->BSRR = GPIO_BSRR_BR_3;	// BIN2 = 0
 
     enable_motors();
+
+    delay_cycles(5000000);
+
+    brake_stop();
 
 }
 
@@ -67,13 +116,15 @@ void turn_right(void) {
     GPIOB->BSRR = GPIO_BSRR_BR_5;	// BIN1 = 0
     GPIOB->BSRR = GPIO_BSRR_BR_3;	// BIN2 = 0
 
-    delay_cycles(5000000);
-
-    GPIOC->BSRR = GPIO_BSRR_BS_7;	// AIN1 = 0
+    GPIOC->BSRR = GPIO_BSRR_BS_7;	// AIN1 = 1
     GPIOB->BSRR = GPIO_BSRR_BR_6;	// AIN2 = 0
 
+    enable_motors();
 
-	enable_motors();
+
+    delay_cycles(5000000);
+
+    brake_stop();
 }
 
 /*

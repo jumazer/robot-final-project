@@ -8,6 +8,10 @@
 #ifndef MOTOR_CONTROL_H_
 #define MOTOR_CONTROL_H_
 
+void init_motor_control();
+
+void process_command(char);
+
 void move_forward(void);
 
 void move_backward(void);

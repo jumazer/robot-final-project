@@ -23,11 +23,10 @@
 #include "motor_control.h"
 #include "usart.h"
 
+// Code for viewing clk frequency
 #include "stm32f0xx.h"
-
 extern uint32_t SystemCoreClock;
 extern void SystemCoreClockUpdate(void);
-
 void get_clock_info() {
     SystemCoreClockUpdate();
 
@@ -59,28 +58,29 @@ void get_clock_info() {
 
 int main(void)
 {
-	/* You can use the Command Shell Console in STM32CubeIDE or an
-	 * external program such as Putty or TeraTerm to view printf output.
-	 * The settings are: Baud: 9600, Parity: None, Stop Bits: 1 with
-	 * the ST-Link COM port setting.
+	/*
 	 * Clocks: Processor = 48 Mhz. AHB = 48 MHz. APB = 24 MHz.
 	 */
 
     init_board();
-    init_usart();
+    init_usart2();
+    init_usart4();
+    init_motor_control();
 
 
     DBG_PRINTF("STARTING PROGRAM\r\n");
 
-//    // Enable the motor controller TB6612
-//    GPIOA->BSRR = GPIO_BSRR_BS_9;	// STBY = 1
-//
-//
-//
-    DBG_PRINTF("Enter a character: ");
-    fflush(stdout);
-    char c = usart_getchar();
-    DBG_PRINTF("\r\nYou entered: %c\r\n", c);
+    char d;
+    while(1) {
+//        DBG_PRINTF("Enter a character: ");
+//        fflush(stdout);
+//        char c = usart_getchar();
+//        DBG_PRINTF("\r\nYou entered: %c\r\n", c);
+//        process_command(c);
 
-    while(1) { }
+        if(bluetooth_try_getchar(&d)) {
+        	DBG_PRINTF("BT got: 0x%02X\r\n", (unsigned char)d);
+        	DBG_PRINTF("BT got: %c\r\n", d);
+        }
+    }
 }
