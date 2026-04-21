@@ -52,12 +52,12 @@ void process_command(char cmd_buffer[]) {
 
 static void enable_motors(void) {
     GPIOA->BSRR = GPIO_BSRR_BS_7;   // PWMA = 1
-    GPIOA->BSRR = GPIO_BSRR_BS_10;  // PWMB = 1
+    GPIOA->BSRR = GPIO_BSRR_BS_6;  // PWMB = 1
 }
 
 static void disable_motors(void) {
     GPIOA->BSRR = GPIO_BSRR_BR_7;   // PWMA = 0
-    GPIOA->BSRR = GPIO_BSRR_BR_10;  // PWMB = 0
+    GPIOA->BSRR = GPIO_BSRR_BR_6;  // PWMB = 0
 }
 
 /*

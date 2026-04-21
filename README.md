@@ -48,3 +48,16 @@ void get_clock_info() {
     DBG_PRINTF("hclk: %lu\r\n", hclk);
     DBG_PRINTF("sysclk: %lu\r\n", sysclk);
 }
+
+
+// Joystick Forward-Backward mapping
+F99R00 is the value produced when moving the joystick all the way forward
+B99R00 is the value produced when moving the joystick all the way backward
+F00R00 is the value when produced when I am not touching the joystick at all
+
+// Joystick Left-Right mapping
+FOOR60 is the value produced when moving the right joystick all the way right
+FOOL60 is the value produced when moving the right joystick all the way right
+F00R00 is the value when produced when I am not touching the joystick at all
+
+
