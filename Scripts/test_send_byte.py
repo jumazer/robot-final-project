@@ -13,7 +13,7 @@ def main():
 
 
     with open(DEV, "wb", buffering=0) as f:
-        f.write(b"w")
+        f.write(b"w\n")
 
     print(f"Sent 'w' to bluetooth module HC-05")
 

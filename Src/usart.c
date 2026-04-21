@@ -9,6 +9,7 @@
 
 #include "utilities.h"
 #include "cbfifo.h"
+#include "debug.h"
 
 
 #define F_USART_CLOCK 			(24UL * 1000UL * 1000UL)
@@ -16,8 +17,25 @@
 #define BLUETOOTH_BAUD_RATE 	9600UL
 
 static cbfifo debug_rx;
+static cbfifo bluetooth_rx;
 
-cbfifo bluetooth_rx;
+/*
+ * @brief Converts an uppercase letter to lowercase
+ * Leaves all non-uppercase characters unchanged
+ *
+ * @param[c] Character to convert
+ *
+ * @return Lowercase version of the character if uppercase, otherwise original character
+ */
+static int to_lower(int c)
+{
+    if (c >= 'A' && c <= 'Z')
+    {
+        return (int)(c + ('a' - 'A'));
+    }
+    return c;
+}
+
 
 /*
  * @brief Initializes USART2 for serial communication
@@ -119,17 +137,20 @@ int usart_getchar(void) {
 	return __io_getchar();
 }
 
-bool bluetooth_char_available(void) {
-    return !cb_empty(&bluetooth_rx);
-}
-
-bool bluetooth_try_getchar(char *out) {
-    if (cb_empty(&bluetooth_rx)) {
+bool bluetooth_try_getcommand(char cmd_buffer[] , uint16_t *buffer_index) {
+    if(cb_empty(&bluetooth_rx)) {
         return false;
     }
 
-    *out = (char) cb_dequeue(&bluetooth_rx);
-    return true;
+    char c = (char) cb_dequeue(&bluetooth_rx);
+    cmd_buffer[*buffer_index] = to_lower(c);
+    (*buffer_index)++;
+
+    if(c == '\n') {
+    	return true;
+    }
+
+    return false;
 }
 
 

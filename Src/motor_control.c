@@ -6,52 +6,46 @@
  */
 
 #include <stm32f091xc.h>
+#include <string.h>
 
 #include "debug.h"
 #include "motor_control.h"
 
-/*
- * @brief Converts an uppercase letter to lowercase
- * Leaves all non-uppercase characters unchanged
- *
- * @param[c] Character to convert
- *
- * @return Lowercase version of the character if uppercase, otherwise original character
- */
-static int to_lower(int c)
-{
-    if (c >= 'A' && c <= 'Z')
-    {
-        return (int)(c + ('a' - 'A'));
-    }
-    return c;
+static void strip_newline(char cmd_buffer[]) {
+	uint16_t i = 0;
+	while(cmd_buffer[i]) {
+		if(cmd_buffer[i] == '\r' || cmd_buffer[i] == '\n') {
+			cmd_buffer[i] = '\0';
+			return;
+		}
+		i++;
+	}
 }
+
 
 void init_motor_control() {
     // Enable the motor controller TB6612
     GPIOA->BSRR = GPIO_BSRR_BS_9;	// STBY = 1
 }
 
-void process_command(char c) {
-	char lower_c = to_lower(c);
+void process_command(char cmd_buffer[]) {
 
-	switch(lower_c) {
-		case 'w':
-			move_forward();
-			break;
-		case 'a':
-			turn_left();
-			break;
-		case 's':
-			move_backward();
-			break;
-		case 'd':
-			turn_right();
-			break;
-		case 'b':
-			brake_stop();
-		case 'q':
-			stop();
+	strip_newline(cmd_buffer);
+
+	if(strcmp(cmd_buffer, "w") == 0) {
+		move_forward();
+	} else if(strcmp(cmd_buffer, "a") == 0) {
+		turn_left();
+	} else if(strcmp(cmd_buffer, "d") == 0) {
+		turn_right();
+	} else if(strcmp(cmd_buffer, "s") == 0) {
+		move_backward();
+	} else if(strcmp(cmd_buffer, "b") == 0) {
+		brake_stop();
+	} else if(strcmp(cmd_buffer, "q") == 0) {
+		stop();
+	} else {
+		DBG_PRINTF("bad command sent: %s", cmd_buffer);
 	}
 }
 

@@ -17,8 +17,6 @@ void init_usart4(void);
 
 int usart_getchar(void);
 
-bool bluetooth_char_available(void);
-
-bool bluetooth_try_getchar(char *out);
+bool bluetooth_try_getcommand(char cmd_buffer[], uint16_t *buffer_index);
 
 #endif /* USART_H_ */

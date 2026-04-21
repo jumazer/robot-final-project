@@ -14,15 +14,17 @@ def main():
 
     while True:
         cmd = input("Please enter a command: ")
-        cmd = cmd.encode('ascii')
         if not cmd.isalpha():
             print(f"Bad cmd: {cmd}, please enter another")
             continue
-        
+
+        cmd = cmd + "\n"
+        cmd = cmd.encode('ascii')
+
         with open(RFCOMM_FILE, "wb", buffering=0) as f:
             f.write(cmd)
 
-        print(f"Sent command: {cmd.decode('ascii')} to bluetooth module HC-05")
+        print(f"Sent command: {cmd} to bluetooth module HC-05")
 
 
 if __name__ == "__main__":

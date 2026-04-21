@@ -10,7 +10,7 @@
 
 void init_motor_control();
 
-void process_command(char);
+void process_command(char cmd_buffer[]);
 
 void move_forward(void);
 

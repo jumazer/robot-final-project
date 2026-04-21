@@ -17,44 +17,26 @@
  */
 
 #include <stm32f091xc.h>
+#include <string.h>
 
 #include "debug.h"
 #include "board.h"
 #include "motor_control.h"
 #include "usart.h"
+#include "cbfifo.h"
 
-// Code for viewing clk frequency
-#include "stm32f0xx.h"
-extern uint32_t SystemCoreClock;
-extern void SystemCoreClockUpdate(void);
-void get_clock_info() {
-    SystemCoreClockUpdate();
+static char cmd_buffer[QUEUE_SIZE] = {0};
+static uint16_t buffer_index = 0;
 
-    volatile uint32_t hclk = SystemCoreClock;   // core clock
-
-    volatile uint32_t sysclk = hclk;
-    volatile uint32_t pclk   = hclk;
-
-    uint32_t hpre = (RCC->CFGR >> 4) & 0xF;     // AHB prescaler
-    uint32_t ppre = (RCC->CFGR >> 8) & 0x7;     // APB prescaler
-
-    // Recover SYSCLK from HCLK
-    if (hpre >= 8) {                            // 1000:/2 ... 1111:/512
-        uint32_t ahb_shift = hpre - 7;
-        sysclk = hclk << ahb_shift;
-    }
-
-
-    // Get PCLK from HCLK
-    if (ppre >= 4) {                            // 100:/2, 101:/4, 110:/8, 111:/16
-        pclk = hclk >> (ppre - 3);
-    }
-
-    DBG_PRINTF("pclk: %lu\r\n", pclk);
-    DBG_PRINTF("hclk: %lu\r\n", hclk);
-    DBG_PRINTF("sysclk: %lu\r\n", sysclk);
+static void print_hex(char cmd_buffer[]) {
+	DBG_PRINTF("hex is: ");
+	int  i = 0;
+	while(cmd_buffer[i] != '\0') {
+		DBG_PRINTF("%02x", (unsigned char) cmd_buffer[i]);
+		i++;
+	}
+	DBG_PRINTF("\r\n");
 }
-
 
 int main(void)
 {
@@ -70,15 +52,14 @@ int main(void)
 
     DBG_PRINTF("STARTING PROGRAM\r\n");
 
-    char d;
-    while(1) {
-    	 DBG_PRINTF("alive\r\n");
-    	 delay_cycles(5000000);
 
-        if(bluetooth_try_getchar(&d)) {
-        	DBG_PRINTF("BT got: 0x%02X\r\n", (unsigned char)d);
-        	DBG_PRINTF("BT got: %c\r\n", d);
-        	process_command(d);
+    while(1) {
+        if(bluetooth_try_getcommand(cmd_buffer, &buffer_index)) {
+        	DBG_PRINTF("BT got: %s\r", cmd_buffer);
+        	print_hex(cmd_buffer);
+        	process_command(cmd_buffer);
+        	buffer_index = 0;
+        	memset(cmd_buffer, 0, QUEUE_SIZE);
         }
 
 
