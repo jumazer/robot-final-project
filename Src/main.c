@@ -72,15 +72,15 @@ int main(void)
 
     char d;
     while(1) {
-//        DBG_PRINTF("Enter a character: ");
-//        fflush(stdout);
-//        char c = usart_getchar();
-//        DBG_PRINTF("\r\nYou entered: %c\r\n", c);
-//        process_command(c);
+    	 DBG_PRINTF("alive\r\n");
+    	 delay_cycles(5000000);
 
         if(bluetooth_try_getchar(&d)) {
         	DBG_PRINTF("BT got: 0x%02X\r\n", (unsigned char)d);
         	DBG_PRINTF("BT got: %c\r\n", d);
+        	process_command(d);
         }
+
+
     }
 }
