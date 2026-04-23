@@ -109,8 +109,8 @@ void process_command(char cmd_buffer[]) {
 
 	if(pwm_motor_firsthalf == 40 && pwm_motor_lasthalf == 40) {
 		command = first_char;
-		TIM3->CCR2 = pwm_motor_firsthalf; // set to 99
-		TIM3->CCR1 = pwm_motor_lasthalf; // set to 99
+		TIM3->CCR2 = pwm_motor_firsthalf;
+		TIM3->CCR1 = pwm_motor_lasthalf;
 	} else if(pwm_motor_firsthalf != 0 && pwm_motor_lasthalf == 0) {
 		TIM3->CCR2 = pwm_motor_firsthalf;
 		TIM3->CCR1 = pwm_motor_firsthalf;
@@ -131,16 +131,14 @@ void process_command(char cmd_buffer[]) {
 	if(command == 'w' || command == 'f') {
 		move_forward();
 	} else if(command == 'a' || command == 'l') {
-		turn_left();
+		// turn_left();
 	} else if(command == 'd' || command == 'r') {
-		turn_right();
-	} else if(command == 's' || command == 'b') {
-		DBG_PRINTF("In IF STMT for CMD 's'\r\n");
+		// turn_right();
+	} else if(command == 's') {
 		move_backward();
 	} else if(command == 'q') {
 		brake_stop();
 	} else if(command == 'e') {
-		DBG_PRINTF("In IF STMT for CMD 'e'\r\n");
 		stop();
 	} else {
 		DBG_PRINTF("Bad command sent: %s\r\n", cmd_buffer);
@@ -152,6 +150,8 @@ void process_command(char cmd_buffer[]) {
  * I define forward as having AIN1/BIN1=1, and AIN2/BIN2=0
  */
 void move_forward() {
+	DBG_PRINTF("forward\r\n");
+
     // motor 1
 	GPIOC->BSRR = GPIO_BSRR_BS_7;	// AIN1 = 1
     GPIOB->BSRR = GPIO_BSRR_BR_6;	// AIN2 = 0
@@ -159,10 +159,14 @@ void move_forward() {
     GPIOB->BSRR = GPIO_BSRR_BS_3;	// BIN2 = 1
 
     // motor 2
-    GPIOC->BSRR = GPIO_BSRR_BS_3; 	// AIN1 = 1
-    GPIOC->BSRR = GPIO_BSRR_BR_2; 	// AIN2 = 0
+    GPIOC->BSRR = GPIO_BSRR_BS_2; 	// AIN1 = 1
+    GPIOC->BSRR = GPIO_BSRR_BR_3; 	// AIN2 = 0
     GPIOC->BSRR = GPIO_BSRR_BR_1; 	// BIN1 = 0
     GPIOB->BSRR = GPIO_BSRR_BS_0; 	// BIN2 = 1
+
+//    GPIOC->BSRR = GPIO_BSRR_BS_2;   // PC2 high
+//    GPIOC->BSRR = GPIO_BSRR_BR_3;   // PC3 low
+//    DBG_PRINTF("forward: PC2=1 PC3=0\r\n");
 }
 
 /*
@@ -170,6 +174,8 @@ void move_forward() {
  * I define backward as having AIN1/BIN1=0, and AIN2/BIN2=1
  */
 void move_backward() {
+	DBG_PRINTF("backward\r\n");
+
 	// motor 1
     GPIOC->BSRR = GPIO_BSRR_BR_7;	// AIN1 = 0
     GPIOB->BSRR = GPIO_BSRR_BS_6;	// AIN2 = 1
@@ -177,10 +183,14 @@ void move_backward() {
     GPIOB->BSRR = GPIO_BSRR_BR_3;	// BIN2 = 0
 
     // motor 2
-    GPIOC->BSRR = GPIO_BSRR_BR_3; 	// AIN1 = 0
-    GPIOC->BSRR = GPIO_BSRR_BS_2; 	// AIN2 = 1
+    GPIOC->BSRR = GPIO_BSRR_BR_2; 	// AIN1 = 0
+    GPIOC->BSRR = GPIO_BSRR_BS_3; 	// AIN2 = 1
     GPIOC->BSRR = GPIO_BSRR_BS_1; 	// BIN1 = 1
     GPIOB->BSRR = GPIO_BSRR_BR_0; 	// BIN2 = 0
+
+//    GPIOC->BSRR = GPIO_BSRR_BR_2;   // PC2 low
+//    GPIOC->BSRR = GPIO_BSRR_BS_3;   // PC3 high
+//    DBG_PRINTF("backward: PC2=0 PC3=1\r\n");
 }
 
 /*
@@ -210,6 +220,7 @@ void turn_right() {
  * Brake stop means gradually stop the motors
  */
 void brake_stop() {
+	DBG_PRINTF("brake\r\n");
 	// motor 1
     GPIOC->BSRR = GPIO_BSRR_BR_7;	// AIN1 = 0
     GPIOB->BSRR = GPIO_BSRR_BR_6;	// AIN2 = 0
@@ -217,15 +228,16 @@ void brake_stop() {
     GPIOB->BSRR = GPIO_BSRR_BR_3;	// BIN2 = 0
 
     // motor 2
-    GPIOC->BSRR = GPIO_BSRR_BR_3; 	// AIN1 = 0
-    GPIOC->BSRR = GPIO_BSRR_BR_2; 	// AIN2 = 0
+    GPIOC->BSRR = GPIO_BSRR_BR_2; 	// AIN1 = 0
+    GPIOC->BSRR = GPIO_BSRR_BR_3; 	// AIN2 = 0
     GPIOC->BSRR = GPIO_BSRR_BR_1; 	// BIN1 = 0
     GPIOB->BSRR = GPIO_BSRR_BR_0; 	// BIN2 = 0
 
     // Apply full PWM while braking
-    TIM3->CCR2 = TIM3->ARR;
-    TIM3->CCR1 = TIM3->ARR;
+    TIM3->CCR2 = 0;
+    TIM3->CCR1 = 0;
 }
+
 
 /*
  * Stop the robot using control pins on the TB6612FNG

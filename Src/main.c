@@ -25,6 +25,7 @@
 #include "usart.h"
 #include "cbfifo.h"
 #include "tim3_pwm.h"
+#include "utilities.h"
 
 static char cmd_buffer[QUEUE_SIZE] = {0};
 static uint16_t buffer_index = 0;
@@ -38,6 +39,23 @@ static uint16_t buffer_index = 0;
 // 	}
 // 	DBG_PRINTF("\r\n");
 // }
+
+void test_pc2_pc3(void) {
+    RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
+
+    MODIFY_FIELD(GPIOC->MODER, GPIO_MODER_MODER2, ESF_GPIO_MODER_OUTPUT);
+    MODIFY_FIELD(GPIOC->MODER, GPIO_MODER_MODER3, ESF_GPIO_MODER_OUTPUT);
+
+    while (1) {
+        GPIOC->BSRR = GPIO_BSRR_BS_2;   // PC2 high
+        GPIOC->BSRR = GPIO_BSRR_BR_3;   // PC3 low
+        for (volatile int i = 0; i < 8000000; i++) { }
+
+        GPIOC->BSRR = GPIO_BSRR_BR_2;   // PC2 low
+        GPIOC->BSRR = GPIO_BSRR_BS_3;   // PC3 high
+        for (volatile int i = 0; i < 8000000; i++) { }
+    }
+}
 
 int main(void)
 {

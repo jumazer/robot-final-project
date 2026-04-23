@@ -16,9 +16,9 @@ void move_forward(void);
 
 void move_backward(void);
 
-void turn_left(void);
-
-void turn_right(void);
+//void turn_left(void);
+//
+//void turn_right(void);
 
 void brake_stop(void);
 

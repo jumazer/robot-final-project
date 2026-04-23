@@ -68,10 +68,8 @@ F00R00 is the value when produced when I am not touching the joystick at all
 PA9 -> STBY
 PC7 -> AIN1
 PB6 -> AIN2
-PA7 -> PWMA
 PB5 -> BIN1
 PB3 -> BIN2
-PA6 -> PWMB
 3.3V -> VCC
 GND -> GND
 battery + -> VM
@@ -81,10 +79,11 @@ battery - -> GND
 PB0 -> BIN2
 PC1 -> BIN1
 PC0 -> STBY
-PC3 -> AIN1
-PC2 -> AIN2
+PC3 -> AIN2
+PC2 -> AIN1
 
-
+PA6 -> PWMB
+PA7 -> PWMA
 
 Bluetooth Module:
 - HC-05 VCC -> STM32 3.3V or board VCC input depending on breakout
