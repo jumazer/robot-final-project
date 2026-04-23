@@ -21,5 +21,6 @@
 
 #define UNUSED(X)  (void)X
 
+int to_lower(int c);
 
 #endif /* UTILITIES_H_ */

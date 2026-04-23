@@ -20,24 +20,6 @@ static cbfifo debug_rx;
 static cbfifo bluetooth_rx;
 
 /*
- * @brief Converts an uppercase letter to lowercase
- * Leaves all non-uppercase characters unchanged
- *
- * @param[c] Character to convert
- *
- * @return Lowercase version of the character if uppercase, otherwise original character
- */
-static int to_lower(int c)
-{
-    if (c >= 'A' && c <= 'Z')
-    {
-        return (int)(c + ('a' - 'A'));
-    }
-    return c;
-}
-
-
-/*
  * @brief Initializes USART2 for serial communication
  * Configures GPIO, baud rate, parity, stop bits, FIFOs, and interrupts
  *

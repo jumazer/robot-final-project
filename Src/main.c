@@ -24,19 +24,20 @@
 #include "motor_control.h"
 #include "usart.h"
 #include "cbfifo.h"
+#include "tim3_pwm.h"
 
 static char cmd_buffer[QUEUE_SIZE] = {0};
 static uint16_t buffer_index = 0;
 
-static void print_hex(char cmd_buffer[]) {
-	DBG_PRINTF("hex is: ");
-	int  i = 0;
-	while(cmd_buffer[i] != '\0') {
-		DBG_PRINTF("%02x", (unsigned char) cmd_buffer[i]);
-		i++;
-	}
-	DBG_PRINTF("\r\n");
-}
+// static void print_hex(char cmd_buffer[]) {
+// 	DBG_PRINTF("hex is: ");
+// 	int  i = 0;
+// 	while(cmd_buffer[i] != '\0') {
+// 		DBG_PRINTF("%02x", (unsigned char) cmd_buffer[i]);
+// 		i++;
+// 	}
+// 	DBG_PRINTF("\r\n");
+// }
 
 int main(void)
 {
@@ -45,8 +46,9 @@ int main(void)
 	 */
 
     init_board();
-    init_usart2();
-    init_usart4();
+    init_usart2(); // using PA2 and PA3 for usart debugger
+    init_usart4(); // using PA0 and PA1 for bluetooth
+    init_tim3_pwm(); // using PA6 and PA7 for TIM3
     init_motor_control();
 
 
@@ -56,12 +58,10 @@ int main(void)
     while(1) {
         if(bluetooth_try_getcommand(cmd_buffer, &buffer_index)) {
         	DBG_PRINTF("BT got: %s\r", cmd_buffer);
-        	print_hex(cmd_buffer);
+        	// print_hex(cmd_buffer);
         	process_command(cmd_buffer);
         	buffer_index = 0;
         	memset(cmd_buffer, 0, QUEUE_SIZE);
         }
-
-
     }
 }
