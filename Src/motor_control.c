@@ -141,10 +141,9 @@ void motor_apply_command(const drive_command_t *cmd) {
     motor_drive(cmd->left_dir, cmd->left_pwm, cmd->right_dir, cmd->right_pwm);
 }
 
-*/
 /*
-* @brief Drive both motors forward at full speed
-*/
+ * @brief Drive both motors forward at full speed
+ */
 void move_forward(void) {
     DBG_PRINTF("forward\r\n");
     motor_drive(MOTOR_DIR_FORWARD, PWM_MAX, MOTOR_DIR_FORWARD, PWM_MAX);
@@ -158,23 +157,37 @@ void move_backward(void) {
     motor_drive(MOTOR_DIR_BACKWARD, PWM_MAX, MOTOR_DIR_BACKWARD, PWM_MAX);
 }
 
+/*
+ * @brief Turn left by driving the two motors in opposite directions
+ */
 void turn_left(void) {
     DBG_PRINTF("left\r\n");
     motor_drive(MOTOR_DIR_BACKWARD, DEFAULT_TURN_PWM,
                 MOTOR_DIR_FORWARD, DEFAULT_TURN_PWM);
 }
 
+/*
+ * @brief Turn right by driving the two motors in opposite directions
+ */
 void turn_right(void) {
     DBG_PRINTF("right\r\n");
     motor_drive(MOTOR_DIR_FORWARD, DEFAULT_TURN_PWM,
                 MOTOR_DIR_BACKWARD, DEFAULT_TURN_PWM);
 }
 
+/*
+ * @brief Brake both motors using the motor driver's brake command state
+ */
 void brake_stop(void) {
     DBG_PRINTF("brake\r\n");
     motor_drive(MOTOR_DIR_BRAKE, PWM_MAX, MOTOR_DIR_BRAKE, PWM_MAX);
 }
 
+/*
+ * @brief Coast stop both motors
+ *
+ * Removes PWM drive and places both motors into the coast/disabled state.
+ */
 void stop(void) {
     disable_motors();
     motor_drive(MOTOR_DIR_COAST, 0, MOTOR_DIR_COAST, 0);

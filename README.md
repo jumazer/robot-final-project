@@ -6,7 +6,8 @@ This project implements a UART/Bluetooth-controlled mobile robot using an STM32 
 
 The robot receives commands over Bluetooth, parses them into left/right motor commands, and drives a TB6612FNG motor controller using GPIO direction pins and TIM3 PWM outputs.
 
-The project was originally developed on an STM32F446 board and later ported to the STM32F091RC / Nucleo-F091RC platform.
+## Media
+
 
 ## Features
 
@@ -92,6 +93,29 @@ Parses received command strings into `drive_command_t` values. It supports both 
 
 Provides a simple tick-based timing interface used by the communication watchdog.
 
+## Usage
+
+The robot can be controlled in two ways:
+
+### 1. Joystick Control (Recommended)
+
+Use the **BT Car Controller** mobile app to send joystick-style commands over Bluetooth.
+
+### 2. Manual Commands
+
+You can also control the robot by sending single-character commands:
+
+| Command | Action |
+|---|---|
+| `w` | Move forward |
+| `s` | Move backward |
+| `a` | Turn left |
+| `d` | Turn right |
+| `q` | Brake stop |
+| `e` | Coast stop |
+
+These commands can be sent over Bluetooth or through the debug UART.
+
 ## Command Format
 
 ### Fixed Commands
@@ -108,6 +132,8 @@ Provides a simple tick-based timing interface used by the communication watchdog
 ### Joystick Commands
 
 Joystick commands encode throttle and turn values.
+
+These commands were designed to be compatible with the **BT Car Controller** mobile app, which was used to control the robot and define the joystick command format over Bluetooth.
 
 Example:
 
@@ -155,24 +181,6 @@ gcc -IInc -ICMSIS Test/test_robot_logic.c Src/parse_cmd.c Src/utilities.c -o Tes
 
 This test does not require the STM32 board because it only checks portable command-parsing logic.
 
-## STM32F446 to STM32F091RC Port
-
-The project was ported from STM32F446 to STM32F091RC by updating board-specific register names and peripheral mappings.
-
-Important changes included:
-
-- `stm32f446xx.h` → `stm32f091xc.h`
-- `RCC->AHB1ENR` → `RCC->AHBENR`
-- USART status/data registers changed from `SR` / `DR` to `ISR` / `RDR`
-- `UART4` naming changed to `USART4`
-- Alternate function values were updated for the F091RC
-- F446 Cortex-M4 FPU setup was removed because the F091RC uses a Cortex-M0 core without an FPU
-
-## Build Status
-
-The project builds successfully for the STM32F091RC target.
-
-Runtime validation on the final F091RC hardware was limited because the board failed during hardware bring-up, but the code was reviewed and ported to compile cleanly for the F091RC platform.
 
 ## Notes
 

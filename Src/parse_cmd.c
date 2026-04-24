@@ -35,6 +35,10 @@ typedef struct {
 #define TURN_PWM_MAX          35
 #define JOYSTICK_TURN_RAW_MAX 60
 
+/*
+ * Lookup table for single-character commands.
+ * Each entry maps a received command key to a complete left/right motor action.
+ */
 static const command_entry_t command_table[] = {
     { 'w', CMD_DRIVE, MOTOR_DIR_FORWARD,  MOTOR_DIR_FORWARD,  PWM_MAX,  PWM_MAX  },
     { 's', CMD_DRIVE, MOTOR_DIR_BACKWARD, MOTOR_DIR_BACKWARD, PWM_MAX,  PWM_MAX  },
@@ -46,6 +50,12 @@ static const command_entry_t command_table[] = {
     { 'e', CMD_COAST, MOTOR_DIR_COAST,    MOTOR_DIR_COAST,    0,        0        },
 };
 
+/*
+ * @brief Remove trailing newline characters from a command string
+ *
+ * Replaces the first '\r' or '\n' with '\0' so the parser can compare the
+ * command as a normal C string.
+ */
 static void strip_newline(char cmd_buffer[]) {
     uint16_t i = 0;
 
@@ -58,6 +68,11 @@ static void strip_newline(char cmd_buffer[]) {
     }
 }
 
+/*
+ * @brief Compute the length of a null-terminated string
+ *
+ * @return number of characters before the null terminator
+ */
 static uint16_t string_length(const char *s) {
     uint16_t len = 0;
 
@@ -68,14 +83,27 @@ static uint16_t string_length(const char *s) {
     return len;
 }
 
+/*
+ * @brief Check whether a character is an ASCII digit
+ *
+ * @return true for '0' through '9', false otherwise
+ */
 static bool is_digit_char(char c) {
     return (c >= '0') && (c <= '9');
 }
 
+/*
+ * @brief Convert two ASCII digit characters into an integer value
+ *
+ * Example: "42" becomes 42.
+ */
 static uint8_t parse_two_digits(const char *s) {
     return (uint8_t)(((s[0] - '0') * 10) + (s[1] - '0'));
 }
 
+/*
+ * @brief Limit a PWM value to the maximum allowed duty cycle
+ */
 static uint8_t clamp_pwm(uint8_t pwm) {
     if(pwm > PWM_MAX) {
         return PWM_MAX;
@@ -84,6 +112,12 @@ static uint8_t clamp_pwm(uint8_t pwm) {
     return pwm;
 }
 
+/*
+ * @brief Convert signed left/right mix values into motor directions and PWM values
+ *
+ * Positive values become forward commands, negative values become backward
+ * commands, and zero becomes coast. PWM magnitudes are clamped before use.
+ */
 static void convert_signed_mix_to_drive_command(int left_mix, int right_mix, drive_command_t *out_cmd) {
     if(left_mix > 0) {
         out_cmd->left_dir = MOTOR_DIR_FORWARD;
@@ -111,6 +145,14 @@ static void convert_signed_mix_to_drive_command(int left_mix, int right_mix, dri
     out_cmd->right_pwm = clamp_pwm(out_cmd->right_pwm);
 }
 
+/*
+ * @brief Parse a single-character movement command
+ *
+ * Looks up the command in the command table and fills out the corresponding
+ * drive command.
+ *
+ * @return true if the command was recognized, false otherwise
+ */
 static bool parse_fixed_command(const char *cmd_buffer, drive_command_t *out_cmd, command_mode_t *out_mode) {
     size_t i;
 
@@ -132,6 +174,18 @@ static bool parse_fixed_command(const char *cmd_buffer, drive_command_t *out_cmd
     return false;
 }
 
+/*
+ * @brief Parse a joystick-style throttle/turn command
+ *
+ * Expected format is six characters: direction, two throttle digits,
+ * turn direction, and two turn digits. Example: "f50r20".
+ *
+ * The parser converts throttle and turn into left/right motor values using:
+ *   left  = throttle + turn
+ *   right = throttle - turn
+ *
+ * @return true if the joystick command was valid, false otherwise
+ */
 static bool parse_joystick_command(const char *cmd_buffer,
 		drive_command_t *out_cmd, command_mode_t *out_mode) {
     char throttle_dir;
@@ -220,6 +274,14 @@ static bool parse_command(char cmd_buffer[], drive_command_t *out_cmd) {
     return false;
 }
 
+/*
+ * @brief Parse a received command string into a drive command
+ *
+ * Removes line endings, then tries fixed-command parsing followed by
+ * joystick-command parsing.
+ *
+ * @return true if parsing succeeded, false otherwise
+ */
 bool process_command(char cmd_buffer[]) {
     drive_command_t cmd;
 

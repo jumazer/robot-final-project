@@ -63,6 +63,14 @@ void cb_init(cbfifo *cb) {
 	cb->length = 0;
 }
 
+/*
+ * @brief Add one byte to the circular buffer
+ *
+ * Interrupts are temporarily masked because the buffer may be shared between
+ * foreground code and USART interrupt handlers.
+ *
+ * @return 1 on success, 0 if the buffer is full, -1 if cb is NULL
+ */
 int cb_enqueue(cbfifo *cb, unsigned char c) {
     if(cb == NULL) return -1;
 
@@ -83,6 +91,14 @@ int cb_enqueue(cbfifo *cb, unsigned char c) {
     }
 }
 
+/*
+ * @brief Remove one byte from the circular buffer
+ *
+ * Interrupts are temporarily masked because the buffer may be shared between
+ * foreground code and USART interrupt handlers.
+ *
+ * @return dequeued byte, or 0 if the buffer is empty
+ */
 unsigned char cb_dequeue(cbfifo *cb) {
 	unsigned char c = 0;
 
