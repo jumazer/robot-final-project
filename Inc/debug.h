@@ -16,13 +16,4 @@
   #define DBG_PRINTF(...) do{}while(0)
 #endif
 
-#ifdef DEBUG
-static inline void delay_cycles(volatile uint32_t count)
-{
-    while (count--) {
-        __asm volatile ("nop");
-    }
-}
-#endif
-
 #endif /* DEBUG_H_ */
