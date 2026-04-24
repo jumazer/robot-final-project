@@ -4,9 +4,25 @@
 
 This project implements a UART/Bluetooth-controlled mobile robot using an STM32 Nucleo board, PWM motor control, command parsing, and a communication watchdog.
 
-The robot receives commands over Bluetooth, parses them into left/right motor commands, and drives a TB6612FNG motor controller using GPIO direction pins and TIM3 PWM outputs.
+The robot receives commands over Bluetooth, parses them into left/right motor commands, and drives a TB6612FNG motor driver using GPIO direction pins and TIM3 PWM outputs.
 
 ## Media
+
+### Driving demo
+<h3>
+  <a href="https://www.youtube.com/watch?v=r0X5UvUqSxo">
+    ▶ Watch the robot driving demo
+  </a>
+</h3>
+
+### Robot build
+![Robot build](media/stm32_robot.jpg)
+
+### Wiring diagram
+![Wiring diagram](media/wiring_diagram.png)
+
+### Block diagram
+![Block diagram](media/block_diagram.png)
 
 
 ## Features
@@ -33,9 +49,9 @@ External hardware:
 
 - HC-05 Bluetooth module
 - TB6612FNG motor driver
-- DC motors
-- Battery pack / external motor power
-- USB connection for debug UART
+- Four TT gear motors
+- ~7V battery pack for motor power
+- USB connection for STM32 power and debug UART
 
 ## Pin Mapping
 
@@ -58,6 +74,41 @@ External hardware:
 | BIN2 | PB3 |
 | PWMA | PA7 / TIM3_CH2 |
 | PWMB | PA6 / TIM3_CH1 |
+
+
+## Wiring
+
+The robot uses an STM32 Nucleo board, one TB6612FNG motor driver, four TT gear motors, and an HC-05 Bluetooth module.
+
+The four TT gear motors are controlled as two motor groups: left-side motors and right-side motors.
+
+### STM32 to Motor Controller
+
+| STM32 Pin | Connection | Purpose |
+|---|---|---|
+| PA7 | PWMA / left motor PWM | Left motor speed control |
+| PA6 | PWMB / right motor PWM | Right motor speed control |
+| PC7 | AIN1 | Left motor direction |
+| PB6 | AIN2 | Left motor direction |
+| PB5 | BIN1 | Right motor direction |
+| PB3 | BIN2 | Right motor direction |
+| PA9 | STBY | Enables motor controller |
+
+### STM32 to HC-05 Bluetooth Module
+
+| STM32 Pin | HC-05 Pin | Purpose |
+|---|---|---|
+| PA0 | TXD | USART4 RX from Bluetooth |
+| PA1 | RXD | USART4 TX to Bluetooth |
+| 5V | VCC | Bluetooth power |
+| GND | GND | Common ground |
+
+### Power
+
+- The STM32 Nucleo board is powered through USB.
+- The TB6612FNG motor driver receives motor power from an external ~7V battery pack.
+- All grounds are connected together.
+- The TB6612FNG `STBY` pin must be driven high before the motors will run.
 
 ## Software Architecture
 
@@ -101,20 +152,11 @@ The robot can be controlled in two ways:
 
 Use the **BT Car Controller** mobile app to send joystick-style commands over Bluetooth.
 
+The HC-05 is connected to USART4, and the app sends joystick command strings that are parsed by `parse_cmd.c`.
+
 ### 2. Manual Commands
 
-You can also control the robot by sending single-character commands:
-
-| Command | Action |
-|---|---|
-| `w` | Move forward |
-| `s` | Move backward |
-| `a` | Turn left |
-| `d` | Turn right |
-| `q` | Brake stop |
-| `e` | Coast stop |
-
-These commands can be sent over Bluetooth or through the debug UART.
+Manual commands can be sent over Bluetooth or through the debug UART. See the Command Format section below for the supported command characters.
 
 ## Command Format
 
@@ -161,25 +203,27 @@ The main loop includes a communication watchdog. If no valid Bluetooth command i
 
 This prevents the robot from continuing to move if Bluetooth communication drops or the controller stops sending commands.
 
-## Unit Testing
+## Build and Flash Instructions
 
-The project includes a host-side unit test for robot command parsing logic.
+This project was developed in STM32CubeIDE for the STM32 Nucleo-F091RC.
 
-The test file is:
+To build and flash the project:
 
-```text
-Test/test_robot_logic.c
-```
+1. Open the project in STM32CubeIDE.
+2. Connect the STM32 Nucleo-F091RC over USB.
+3. Build the project.
+4. Flash the project to the board using the STM32CubeIDE debug/run configuration.
 
-This test stubs the hardware-facing motor-control function and verifies that command parsing produces the expected drive commands.
+Debug output is sent over USART2 through the Nucleo USB connection. Bluetooth commands are received through USART4 from the HC-05 module.
 
-To compile and run the test from the repository root:
+## Testing
 
-```bash
-gcc -IInc -ICMSIS Test/test_robot_logic.c Src/parse_cmd.c Src/utilities.c -o Test/test_robot_logic && ./Test/test_robot_logic
-```
+This project uses a combination of automated host-side tests and manual hardware validation.
 
-This test does not require the STM32 board because it only checks portable command-parsing logic.
+The automated tests focus on command parsing and robot-drive logic that can be verified without the STM32 board. Hardware-facing behavior, such as PWM output, GPIO motor direction, Bluetooth communication, and watchdog stop behavior, is verified through manual integration tests on the robot.
+
+The full testing plan is documented in:
+TESTING_STRATEGY.md
 
 
 ## Notes
