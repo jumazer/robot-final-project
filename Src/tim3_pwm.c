@@ -5,16 +5,25 @@
  *      Author: julius
  */
 
-#include <stm32f091xc.h>
+#include "stm32f091xc.h"
 
 #include "utilities.h"
 
 // using the formula prescaler = (timer_clock / (f_pwm * (ARR+1)))
-// f_pwm = 10000
+// f_pwm = 5000
 #define PWM_ARR				99
 #define PWM_PRESCALER		48
 
-
+/*
+ * @brief Initialize TIM3 PWM outputs for motor speed control
+ *
+ * Configures PA7 as TIM3_CH2 and PA6 as TIM3_CH1 using alternate function 1.
+ * TIM3 is configured for PWM mode with both channels starting at 0% duty cycle.
+ *
+ * These PWM outputs drive the TB6612FNG motor controller:
+ *   - TIM3_CH2 / PA7 -> PWMA
+ *   - TIM3_CH1 / PA6 -> PWMB
+ */
 void init_tim3_pwm(void) {
     // Enable the clock to GPIOA
     RCC->AHBENR |= RCC_AHBENR_GPIOAEN;

@@ -66,6 +66,13 @@ void init_usart2() {
 	NVIC_EnableIRQ(USART2_IRQn);
 }
 
+/*
+ * @brief Initialize USART4 for Bluetooth receive
+ *
+ * Configures PA0/PA1 for USART4 alternate function mode, sets the Bluetooth
+ * baud rate, enables receive interrupts, and enables the shared USART3_8 IRQ.
+ * Received Bluetooth bytes are stored in the bluetooth_rx circular buffer.
+ */
 void init_usart4(void) {
 	cb_init(&bluetooth_rx);
 
@@ -106,19 +113,42 @@ void init_usart4(void) {
 	NVIC_EnableIRQ(USART3_8_IRQn);
 }
 
+/*
+ * @brief Check whether debug UART data is available
+ *
+ * @return true if at least one byte is available in the debug RX buffer
+ */
 static inline bool usart_char_available(void) {
 	return !cb_empty(&debug_rx);
 }
 
+/*
+ * @brief Blocking getchar implementation for debug USART input
+ *
+ * Waits until a byte is available from USART2, then removes and returns it.
+ */
 int __io_getchar(void) {
 	while(!usart_char_available()) { }
 	return (unsigned char) cb_dequeue(&debug_rx);
 }
 
+/*
+ * @brief Read one character from the debug USART
+ *
+ * Wrapper around __io_getchar().
+ */
 int usart_getchar(void) {
 	return __io_getchar();
 }
 
+/*
+ * @brief Try to read a complete Bluetooth command
+ *
+ * Reads one byte from the Bluetooth RX buffer, stores it in cmd_buffer,
+ * and returns true once a newline-terminated command has been received.
+ *
+ * @return true if a complete command is ready, false otherwise
+ */
 bool bluetooth_try_getcommand(char cmd_buffer[] , uint16_t *buffer_index) {
     if(cb_empty(&bluetooth_rx)) {
         return false;
@@ -135,7 +165,11 @@ bool bluetooth_try_getcommand(char cmd_buffer[] , uint16_t *buffer_index) {
     return false;
 }
 
-
+/*
+ * @brief USART2 interrupt handler for debug UART receive
+ *
+ * Reads received bytes from USART2 and stores them in the debug RX buffer.
+ */
 void USART2_IRQHandler(void) {
 	unsigned char c;
 	if(USART2->ISR & USART_ISR_RXNE) { // Receive buffer not empty
@@ -147,6 +181,12 @@ void USART2_IRQHandler(void) {
 	}
 }
 
+/*
+ * @brief Shared USART3-through-USART8 interrupt handler
+ *
+ * Handles USART4 receive interrupts for the Bluetooth module. Received bytes
+ * are read from USART4 and stored in the Bluetooth RX buffer.
+ */
 void USART3_4_5_6_7_8_IRQHandler(void) {
 	unsigned char c;
 	if(USART4->ISR & USART_ISR_RXNE) { // Receive buffer not empty
